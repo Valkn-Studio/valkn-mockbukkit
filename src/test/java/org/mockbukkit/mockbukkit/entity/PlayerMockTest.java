@@ -3,6 +3,9 @@ package org.mockbukkit.mockbukkit.entity;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
@@ -2299,6 +2302,20 @@ class PlayerMockTest
 
 		assertTrue(player.getHeardSounds().stream().anyMatch(audio -> audio.getSound().equals("minecraft:entity.experience_orb.pickup")
 				&& player.getLocation().equals(audio.getLocation())));
+	}
+
+	@Test
+	void showDialog_RecordsTheOpenDialog()
+	{
+		Dialog dialog = Dialog.create(factory -> factory.empty().base(DialogBase.builder(Component.text("Shop")).build())
+				.type(DialogType.notice()));
+		assertNull(player.getOpenDialog());
+
+		player.showDialog(dialog);
+		assertSame(dialog, player.getOpenDialog());
+
+		player.closeDialog();
+		assertNull(player.getOpenDialog());
 	}
 
 	@Test

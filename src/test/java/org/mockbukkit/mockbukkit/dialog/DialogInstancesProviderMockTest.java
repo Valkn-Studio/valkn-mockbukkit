@@ -3,6 +3,7 @@ package org.mockbukkit.mockbukkit.dialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.DialogBase;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.body.ItemDialogBody;
 import io.papermc.paper.registry.data.dialog.body.PlainMessageDialogBody;
@@ -158,7 +159,10 @@ class DialogInstancesProviderMockTest
 	@Test
 	void callbackAction_SendsPapersKey()
 	{
-		DialogAction.CustomClickAction action = DialogAction.customClick((response, audience) -> { }, ClickCallback.Options.builder().build());
+		DialogActionCallback nothing = (response, audience) ->
+		{
+		};
+		DialogAction.CustomClickAction action = DialogAction.customClick(nothing, ClickCallback.Options.builder().build());
 
 		assertEquals(DialogCallbacks.KEY, action.id());
 		assertTrue(((CustomClickActionMock) action).additionsTag().keySet().contains(DialogCallbacks.ID));

@@ -113,7 +113,8 @@ class DialogClickTest
 	{
 		List<String> names = new ArrayList<>();
 		List<Audience> audiences = new ArrayList<>();
-		ActionButton button = ActionButton.builder(Component.text("Buy")).action(DialogAction.customClick((response, audience) -> {
+		ActionButton button = ActionButton.builder(Component.text("Buy")).action(DialogAction.customClick((response, audience) ->
+		{
 			names.add(response.getText("name"));
 			audiences.add(audience);
 		}, ClickCallback.Options.builder().uses(1).build())).build();

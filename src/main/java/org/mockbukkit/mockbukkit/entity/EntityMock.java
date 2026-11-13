@@ -419,30 +419,15 @@ public abstract class EntityMock extends Entity.Spigot implements Entity, Messag
 
 		Set<TeleportFlag> flagSet = Set.of(flags);
 		boolean dismount = !flagSet.contains(TeleportFlag.EntityState.RETAIN_VEHICLE);
-		boolean ignorePassengers = flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS);
 
-		if (flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS) && this.hasPassengers() && location.getWorld().equals(this.getWorld()))
-		{
-			return false;
-		}
 		if (!dismount && getVehicle() != null && location.getWorld() != this.getWorld())
 		{
 			return false;
 		}
 
-		if (this.removed || (!ignorePassengers && hasPassengers()))
+		if (this.removed)
 		{
 			return false;
-		}
-		if (location.getWorld() != getWorld())
-		{
-			// Don't allow teleporting between worlds while keeping passengers
-			// and if remaining on vehicle.
-			if ((ignorePassengers && hasPassengers())
-					|| (!dismount && isInsideVehicle()))
-			{
-				return false;
-			}
 		}
 		if (dismount)
 		{
@@ -455,9 +440,27 @@ public abstract class EntityMock extends Entity.Spigot implements Entity, Messag
 			// There is actually no non-null check in the CraftBukkit implementation
 			Preconditions.checkNotNull(event.getTo(), "The location where the entity moved to in the event cannot be null");
 			teleportWithoutEvent(event.getTo(), cause);
+			carryPassengers(event.getTo(), cause);
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Moves the passengers along with their vehicle, as Paper keeps them on board (POSITION_RIDER).
+	 * Their seat offsets are not simulated: they are placed at the vehicle's location.
+	 *
+	 * @param location The location the vehicle was teleported to.
+	 * @param cause    The teleport cause.
+	 */
+	private void carryPassengers(@NotNull Location location, @NotNull TeleportCause cause)
+	{
+		for (Entity passenger : getPassengers())
+		{
+			EntityMock rider = (EntityMock) passenger;
+			rider.teleportWithoutEvent(location, cause);
+			rider.carryPassengers(location, cause);
+		}
 	}
 
 	/**

@@ -10,8 +10,10 @@ plugins {
 /*
   This is the name of our MockBukkit artifact, it includes
   the API version of Minecraft we are targeting.
+  Valkn: lowercase, as the published artifact (mockbukkit-v26.3), so that a Gradle composite
+  build substitutes it for the dependency without any declaration.
 */
-rootProject.name = "MockBukkit-v${extensions.extraProperties.get("paper.api.version")}"
+rootProject.name = "mockbukkit-v${extensions.extraProperties.get("paper.api.version")}"
 
 include(":extra:TestPlugin")
 include(":metaminer")

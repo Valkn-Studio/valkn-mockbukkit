@@ -269,7 +269,7 @@ class BukkitSchedulerMockTest
 
 		scheduler.performTicks(1L);
 		barrier.await(3L, TimeUnit.SECONDS);
-		assertEquals(1, scheduler.getNumberOfQueuedAsyncTasks());
+		assertQueuedAsyncTasksSoon(1);
 		assertEquals(1, count.get());
 
 		scheduler.performTicks(1L);
@@ -918,4 +918,17 @@ class BukkitSchedulerMockTest
 		assertEquals(1, goodPanda.getTicksLived());
 	}
 
+	/**
+	 * Asserts that {@code expected} async tasks are queued, waiting up to three seconds: a repeating task that just passed
+	 * its barrier is still running, and is queued again only once its body returns.
+	 */
+	private void assertQueuedAsyncTasksSoon(int expected) throws InterruptedException
+	{
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+		while (scheduler.getNumberOfQueuedAsyncTasks() != expected && System.nanoTime() < deadline)
+		{
+			Thread.sleep(1);
+		}
+		assertEquals(expected, scheduler.getNumberOfQueuedAsyncTasks());
+	}
 }

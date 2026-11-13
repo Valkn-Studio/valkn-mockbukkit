@@ -549,6 +549,15 @@ class EntityMockTest
 		assertTrue(entity.isInvulnerable());
 	}
 
+	@Test
+	void isMarkedInvulnerable()
+	{
+		assertFalse(entity.isMarkedInvulnerable());
+		entity.setInvulnerable(true);
+		assertTrue(entity.isMarkedInvulnerable());
+		entity.setInvulnerable(false);
+		assertFalse(entity.isMarkedInvulnerable());
+	}
 
 	@Test
 	void entityDamage_preventedByInvulnerable()

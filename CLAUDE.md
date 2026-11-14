@@ -14,7 +14,11 @@ Depuis le workspace : les dépôts qui testent sur MockBukkit le prennent depuis
 - On travaille sur `valkn/v26.3`, partie de `minecraft/v26.3`, la branche de MockBukkit, gardée telle quelle pour suivre
   l'amont : une mise à jour de MockBukkit arrive sur `minecraft/v26.3`, puis `valkn/v26.3` est rebasée dessus.
 - Chaque ajout est écrit pour pouvoir être proposé à MockBukkit : un commit par ajout, avec ses tests, dans leur style.
-  Ce qui n'est propre qu'à Valkn (ce fichier, `.valkn-module`, le nom du projet en minuscules) tient dans un seul commit.
+  Ce qui n'est propre qu'à Valkn (ce fichier, `.valkn-module`, le nom du projet en minuscules, la publication sur le
+  registre) tient dans les commits `chore:` du fork, à replier en un seul au prochain rebase sur l'amont.
+- Le fork se publie sur le registre de Valkn (valkn-workspace ADR 0007) sous `studio.valkn.mockbukkit:mockbukkit-v26.3`,
+  jamais sous `org.mockbukkit` : un tag `v26.3-valkn.<n>` sur `valkn/v26.3` publie `26.3-valkn.<n>` (workflow
+  `valkn-publish.yml`) ; le catalogue de valkn-gradle-plugin épingle cette version.
 - Les commits sont ceux de l'utilisateur : auteur `Traqueur_ <traqueur.dev@gmail.com>`, messages courts au format de
   l'amont (`feat: …`, `fix: …`, `chore: …`), sans ligne `Co-Authored-By` ni lien de session.
 - Une méthode implémentée suit Paper (ses évènements, ses valeurs par défaut) ; ce que MockBukkit ne peut pas simuler

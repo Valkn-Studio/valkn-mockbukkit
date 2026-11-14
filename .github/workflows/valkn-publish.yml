@@ -1,0 +1,59 @@
+# Valkn: the fork published on Valkn's registry (valkn-workspace ADR 0007), on its own tags, v26.3-valkn.1; by hand with
+# sandbox, under sandbox.valkn. MockBukkit's own workflows (Build, Tag, Publish) stay as they are.
+name: Valkn publish
+
+on:
+  push:
+    tags: ["v*-valkn.*"]
+  workflow_dispatch:
+    inputs:
+      sandbox:
+        description: Publish under sandbox.valkn
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: valkn-publish-${{ github.ref }}
+  cancel-in-progress: false   # a release is for good: never cut short
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: The registry's secrets
+        env:
+          URL: ${{ secrets.VALKN_REGISTRY_URL }}
+          TOKEN: ${{ secrets.VALKN_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+            echo "::error::VALKN_REGISTRY_URL or VALKN_REGISTRY_TOKEN is not set: './valkn ws secret' in the workspace, or Valkn Desk"
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # the tags: the version comes from them
+          persist-credentials: false
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          java-version: 25
+          distribution: temurin
+
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      # the root project only: metaminer needs paperweight and a server
+      - name: Test and publish
+        env:
+          URL: ${{ secrets.VALKN_REGISTRY_URL }}
+          VALKN_REGISTRY_USER: ${{ secrets.VALKN_REGISTRY_USER }}
+          VALKN_REGISTRY_TOKEN: ${{ secrets.VALKN_REGISTRY_TOKEN }}
+          SANDBOX: ${{ inputs.sandbox }}
+        run: |
+          group=()
+          if [ "$SANDBOX" = "true" ]; then group=(-Pvalkn.group=sandbox.valkn); fi
+          ./gradlew :test :publishAllPublicationsToValknRepository "-Pvalkn.registry.url=$URL" "${group[@]}" --no-configuration-cache

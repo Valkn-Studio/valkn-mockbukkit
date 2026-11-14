@@ -55,5 +55,5 @@ jobs:
           SANDBOX: ${{ inputs.sandbox }}
         run: |
           group=()
-          if [ "$SANDBOX" = "true" ]; then group=(-Pvalkn.group=sandbox.valkn); fi
+          if [ "$SANDBOX" = "true" ]; then group=(-Pvalkn.publishGroup=sandbox.valkn); fi
           ./gradlew :test :publishAllPublicationsToValknRepository "-Pvalkn.registry.url=$URL" "${group[@]}" --no-configuration-cache

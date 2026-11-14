@@ -9,8 +9,8 @@ plugins {
 }
 
 // Valkn: published on Valkn's registry under a group of its own, never masking MockBukkit's (valkn-workspace ADR 0007);
-// -Pvalkn.group=sandbox.valkn for a trial. The version is the fork's tag, v26.3-valkn.1, when there is one.
-group = (providers.gradleProperty("valkn.group").orNull ?: "studio.valkn") + ".mockbukkit"
+// -Pvalkn.publishGroup=sandbox.valkn for a trial (valkn.group too). The version is the fork's tag, v26.3-valkn.1, when there is one.
+group = (providers.gradleProperty("valkn.publishGroup").orNull ?: providers.gradleProperty("valkn.group").orNull ?: "studio.valkn") + ".mockbukkit"
 version = valknVersion() ?: getFullVersion()
 
 repositories {

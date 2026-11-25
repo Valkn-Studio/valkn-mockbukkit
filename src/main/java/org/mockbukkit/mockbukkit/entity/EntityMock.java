@@ -160,7 +160,7 @@ public abstract class EntityMock extends Entity.Spigot implements Entity, Messag
 
 		this.server = server;
 		this.uuid = uuid;
-		this.id = ENTITY_COUNTER.incrementAndGet();
+		this.id = nextEntityId();
 
 		this.perms = new PermissibleBase(this);
 
@@ -738,6 +738,18 @@ public abstract class EntityMock extends Entity.Spigot implements Entity, Messag
 			}
 		});
 		return nearbyEntities;
+	}
+
+	/**
+	 * Takes the next id of the server's entity counter, as {@link org.bukkit.UnsafeValues#nextEntityId(org.bukkit.World)} does on a
+	 * real server: an entity created afterwards never gets it.
+	 *
+	 * @return The next entity id.
+	 */
+	@ApiStatus.Internal
+	public static int nextEntityId()
+	{
+		return ENTITY_COUNTER.incrementAndGet();
 	}
 
 	@Override

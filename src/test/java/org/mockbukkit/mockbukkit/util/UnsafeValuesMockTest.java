@@ -3,8 +3,11 @@ package org.mockbukkit.mockbukkit.util;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 import org.json.JSONException;
 import org.junit.jupiter.api.Nested;
@@ -13,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockbukkit.mockbukkit.MockBukkitExtension;
+import org.mockbukkit.mockbukkit.MockBukkitInject;
+import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.inventory.meta.ItemMetaMock;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -29,6 +34,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockBukkitExtension.class)
 class UnsafeValuesMockTest
 {
+
+	@MockBukkitInject
+	private ServerMock server;
+
+	@Test
+	void nextEntityId_IsNeverGivenToAnEntity()
+	{
+		World world = server.addSimpleWorld("world");
+
+		int first = server.getUnsafe().nextEntityId(world);
+		int second = server.getUnsafe().nextEntityId(world);
+		ArmorStand stand = world.spawn(new Location(world, 0, 64, 0), ArmorStand.class);
+
+		assertTrue(second > first);
+		assertTrue(stand.getEntityId() > second);
+	}
+
 	private static final String ID_KEY = "id";
 	private static final String COUNT_KEY = "count";
 	private static final String DATA_VERSION_KEY = "DataVersion";

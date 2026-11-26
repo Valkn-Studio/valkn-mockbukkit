@@ -8,8 +8,10 @@ plugins {
 	id("net.kyori.blossom") version "2.2.0"
 }
 
-group = "org.mockbukkit.mockbukkit"
-version = getFullVersion()
+// Valkn: published on Valkn's registry under a group of its own, never masking MockBukkit's (valkn-workspace ADR 0007);
+// -Pvalkn.publishGroup=sandbox.valkn for a trial (valkn.group too). The version is the fork's tag, v26.3-valkn.1, when there is one.
+group = (providers.gradleProperty("valkn.publishGroup").orNull ?: providers.gradleProperty("valkn.group").orNull ?: "studio.valkn") + ".mockbukkit"
+version = valknVersion() ?: getFullVersion()
 
 repositories {
 	mavenCentral()
@@ -35,6 +37,8 @@ dependencies {
 
 	// General utilities for the project
 	implementation("net.bytebuddy:byte-buddy:1.18.11")
+	// The tags of dialog clicks (additions, responses), as Adventure reads them: the version of Paper's Adventure
+	implementation("net.kyori:adventure-nbt:5.2.0")
 
 	compileOnly("org.projectlombok:lombok:1.18.48")
 	annotationProcessor("org.projectlombok:lombok:1.18.48")
@@ -226,10 +230,46 @@ mavenPublishing {
 		}
 	}
 	publishToMavenCentral(true)
-	// No key available to sign with for maven local
-	if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
+	// No key available to sign with for maven local, nor for Valkn's registry
+	if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") || it.contains("ValknRepository") }) {
 		signAllPublications()
 	}
+}
+
+// Valkn: the registry, when valkn.registry.url is set; the token by the rule of valkn-gradle-plugin (the environment first)
+providers.gradleProperty("valkn.registry.url").orNull?.let { registry ->
+	publishing {
+		repositories {
+			maven {
+				name = "valkn"
+				url = uri(registry)
+				fun property(name: String) = providers.gradleProperty(name).orNull?.trim()?.ifEmpty { null }
+				fun variable(name: String) = providers.environmentVariable(name).orNull?.trim()?.ifEmpty { null }
+				val fromEnvironment = variable("VALKN_REGISTRY_TOKEN")
+				val token = fromEnvironment ?: property("valkn.registry.token")
+				if (token != null) {
+					credentials {
+						username = (if (fromEnvironment != null) variable("VALKN_REGISTRY_USER") else property("valkn.registry.user")) ?: "valkn"
+						password = token
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Valkn: the version of the fork's last tag reachable from HEAD (`v26.3-valkn.1`): its version exactly at it
+ * (`26.3-valkn.1`), the next one as a snapshot after it (`26.3-valkn.2-SNAPSHOT`); null without such a tag.
+ */
+fun valknVersion(): String? {
+	val described = providers.exec {
+		commandLine("git", "describe", "--tags", "--long", "--match", "v*-valkn.*")
+		isIgnoreExitValue = true
+	}.standardOutput.asText.get().trim()
+	val match = Regex("^v(.+-valkn\\.)(\\d+)-(\\d+)-g[0-9a-f]+$").matchEntire(described) ?: return null
+	val (base, number, ahead) = match.destructured
+	return if (ahead == "0") base + number else base + (number.toInt() + 1) + "-SNAPSHOT"
 }
 
 fun isAction(): Boolean {

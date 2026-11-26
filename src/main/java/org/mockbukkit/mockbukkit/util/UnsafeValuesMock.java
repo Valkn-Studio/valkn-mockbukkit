@@ -22,6 +22,7 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mockbukkit.mockbukkit.entity.EntityMock;
 import org.mockbukkit.mockbukkit.exception.UnimplementedOperationException;
 import org.mockbukkit.mockbukkit.inventory.ItemStackMock;
 import org.mockbukkit.mockbukkit.inventory.serializer.SerializationUtils;
@@ -282,8 +283,7 @@ public class UnsafeValuesMock implements UnsafeValues
 	@Override
 	public int nextEntityId(World world)
 	{
-		// TODO Auto-generated method stub
-		throw new UnimplementedOperationException();
+		return EntityMock.nextEntityId();
 	}
 
 	@Override

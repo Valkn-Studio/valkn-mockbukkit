@@ -3,6 +3,9 @@ package org.mockbukkit.mockbukkit.entity;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import io.papermc.paper.dialog.Dialog;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
@@ -2271,6 +2274,57 @@ class PlayerMockTest
 				player.getLocation().equals(audio.getLocation()) && audio.getVolume() == volume
 						&& audio.getPitch() == pitch);
 
+	}
+
+	@Test
+	void testPlaySoundKeyWithEntity()
+	{
+		player.playSound(player, "minecraft:entity.experience_orb.pickup", SoundCategory.PLAYERS, 0.5F, 2);
+
+		assertTrue(player.getHeardSounds().stream().anyMatch(audio -> audio.getSound().equals("minecraft:entity.experience_orb.pickup")
+				&& player.getLocation().equals(audio.getLocation()) && audio.getCategory() == SoundCategory.PLAYERS
+				&& audio.getVolume() == 0.5F && audio.getPitch() == 2));
+	}
+
+	@Test
+	void testPlaySoundKeyWithEntityWithoutCategory()
+	{
+		player.playSound(player, "minecraft:entity.experience_orb.pickup", 1, 1);
+
+		assertTrue(player.getHeardSounds().stream().anyMatch(audio -> audio.getSound().equals("minecraft:entity.experience_orb.pickup")
+				&& audio.getCategory() == SoundCategory.MASTER));
+	}
+
+	@Test
+	void testPlaySoundKeyWithEntityAndSeed()
+	{
+		player.playSound(player, "minecraft:entity.experience_orb.pickup", SoundCategory.PLAYERS, 1, 1, 42);
+
+		assertTrue(player.getHeardSounds().stream().anyMatch(audio -> audio.getSound().equals("minecraft:entity.experience_orb.pickup")
+				&& player.getLocation().equals(audio.getLocation())));
+	}
+
+	@Test
+	void showDialog_RecordsTheOpenDialog()
+	{
+		Dialog dialog = Dialog.create(factory -> factory.empty().base(DialogBase.builder(Component.text("Shop")).build())
+				.type(DialogType.notice()));
+		assertNull(player.getOpenDialog());
+
+		player.showDialog(dialog);
+		assertSame(dialog, player.getOpenDialog());
+
+		player.closeDialog();
+		assertNull(player.getOpenDialog());
+	}
+
+	@Test
+	void testPlaySoundWithEntityAndSeed()
+	{
+		player.playSound(player, Sound.ENTITY_SLIME_SQUISH, SoundCategory.PLAYERS, 1, 1, 42);
+
+		player.assertSoundHeard(Sound.ENTITY_SLIME_SQUISH, audio -> player.getLocation().equals(audio.getLocation())
+				&& audio.getCategory() == SoundCategory.PLAYERS);
 	}
 
 	@Test

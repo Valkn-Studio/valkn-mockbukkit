@@ -1,0 +1,3 @@
+# Valkn: the artifact this fork publishes on Valkn's registry (valkn-workspace docs/dev/workspace.md, "Le marqueur").
+# Moving Paper moves it, with the mockbukkit line of valkn-gradle-plugin's catalog.
+published=studio.valkn.mockbukkit:mockbukkit-v26.3

@@ -209,14 +209,18 @@ class EntityMockTest
 	}
 
 	@Test
-	void teleport_Vehicle()
+	void teleport_Vehicle_KeepsItsPassengers()
 	{
 		EntityMock mock = new SimpleEntityMock(server);
+		EntityMock top = new SimpleEntityMock(server);
 		entity.addPassenger(mock);
-		Location from = entity.getLocation();
+		mock.addPassenger(top);
 		Location to = entity.getLocation().add(0, 1.5, 0);
-		assertFalse(entity.teleport(to));
-		assertEquals(from, entity.getLocation());
+		assertTrue(entity.teleport(to));
+		assertEquals(to, entity.getLocation());
+		assertEquals(List.of(mock), entity.getPassengers());
+		assertEquals(to, mock.getLocation());
+		assertEquals(to, top.getLocation());
 	}
 
 	@Test
@@ -543,6 +547,16 @@ class EntityMockTest
 		assertFalse(entity.isInvulnerable());
 		entity.setInvulnerable(true);
 		assertTrue(entity.isInvulnerable());
+	}
+
+	@Test
+	void isMarkedInvulnerable()
+	{
+		assertFalse(entity.isMarkedInvulnerable());
+		entity.setInvulnerable(true);
+		assertTrue(entity.isMarkedInvulnerable());
+		entity.setInvulnerable(false);
+		assertFalse(entity.isMarkedInvulnerable());
 	}
 
 	@Test

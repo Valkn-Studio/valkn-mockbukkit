@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.HumanEntity;
@@ -146,6 +147,7 @@ public abstract class LivingEntityMock extends EntityMock implements LivingEntit
 	private TriState frictionState = TriState.NOT_SET;
 	private Entity leashHolder;
 	private @Nullable Location lastClimbableLocation;
+	private boolean persistenceRequired;
 
 	/**
 	 * Constructs a new {@link LivingEntityMock} on the provided {@link ServerMock} with a specified {@link UUID}.
@@ -162,6 +164,9 @@ public abstract class LivingEntityMock extends EntityMock implements LivingEntit
 		attributes.put(Attribute.MAX_HEALTH, new AttributeInstanceMock(Attribute.MAX_HEALTH, maxHealth));
 		double movementSpeed = AttributesMock.getDefaultValue(Attribute.MOVEMENT_SPEED);
 		attributes.put(Attribute.MOVEMENT_SPEED, new AttributeInstanceMock(Attribute.MOVEMENT_SPEED, movementSpeed));
+		// Like every living entity of the game, it has an armor and an armor toughness
+		registerAttribute(Attribute.ARMOR);
+		registerAttribute(Attribute.ARMOR_TOUGHNESS);
 		resetMaxHealth();
 		setHealth(maxHealth);
 	}
@@ -279,7 +284,8 @@ public abstract class LivingEntityMock extends EntityMock implements LivingEntit
 	@Override
 	public void damage(double amount, @NotNull DamageSource source)
 	{
-		throw new UnimplementedOperationException();
+		Preconditions.checkNotNull(source, "DamageSource cannot be null");
+		simulateDamage(amount, source);
 	}
 
 	/**
@@ -862,15 +868,14 @@ public abstract class LivingEntityMock extends EntityMock implements LivingEntit
 	@Override
 	public boolean getRemoveWhenFarAway()
 	{
-		// TODO Auto-generated method stub
-		throw new UnimplementedOperationException();
+		// As Paper: only a mob despawns, unless its persistence is required
+		return this instanceof Mob && !this.persistenceRequired;
 	}
 
 	@Override
 	public void setRemoveWhenFarAway(boolean remove)
 	{
-		// TODO Auto-generated method stub
-		throw new UnimplementedOperationException();
+		this.persistenceRequired = !remove;
 	}
 
 	@Nullable
@@ -988,8 +993,19 @@ public abstract class LivingEntityMock extends EntityMock implements LivingEntit
 	public void attack(@NotNull Entity target)
 	{
 		Preconditions.checkNotNull(target, "Target cannot be null");
-		// TODO Auto-generated method stub
-		throw new UnimplementedOperationException();
+		Preconditions.checkArgument(target.getWorld().equals(getWorld()), "Target must be in the same world");
+		if (!(target instanceof Damageable damageable))
+		{
+			return;
+		}
+		AttributeInstance attackDamage = getAttribute(Attribute.ATTACK_DAMAGE);
+		double amount = attackDamage == null ? AttributesMock.getDefaultValue(Attribute.ATTACK_DAMAGE) : attackDamage.getValue();
+		DamageSource source = DamageSource.builder(this instanceof HumanEntity ? DamageType.PLAYER_ATTACK : DamageType.MOB_ATTACK)
+				.withCausingEntity(this)
+				.withDirectEntity(this)
+				.withDamageLocation(getLocation())
+				.build();
+		damageable.damage(amount, source);
 	}
 
 	@Override

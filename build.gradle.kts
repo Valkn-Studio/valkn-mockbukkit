@@ -256,6 +256,12 @@ providers.gradleProperty("valkn.registry.url").orNull?.let { registry ->
 			}
 		}
 	}
+	// what `valkn publish <repo> <tag>` runs once the build passed (valkn-workspace ADR 0009), as valkn-gradle-plugin declares it
+	tasks.register("publishReleases") {
+		group = "publishing"
+		description = "Publishes the fork's tagged release on Valkn's registry."
+		dependsOn("publishAllPublicationsToValknRepository")
+	}
 }
 
 /**

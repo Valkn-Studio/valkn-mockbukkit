@@ -231,7 +231,7 @@ mavenPublishing {
 	}
 	publishToMavenCentral(true)
 	// No key available to sign with for maven local, nor for Valkn's registry
-	if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") || it.contains("ValknRepository") }) {
+	if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") || it.contains("ValknRepository") || it == "publishReleases" }) {
 		signAllPublications()
 	}
 }
